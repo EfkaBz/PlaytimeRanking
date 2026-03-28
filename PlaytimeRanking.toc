@@ -1,0 +1,14 @@
+## Interface: 20504
+## Title: |cffffd700Playtime|r |cffff8800Ranking|r
+## Notes: Classement partagé du temps de jeu avec système de titres
+## Author: Daeler
+## Version: 2.0.0
+## SavedVariables: PlaytimeRankingDB
+## DefaultState: enabled
+
+Core.lua
+Database.lua
+Achievements.lua
+Communication.lua
+UI.lua
+Minimap.lua
