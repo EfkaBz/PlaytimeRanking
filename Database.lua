@@ -91,27 +91,32 @@ function PTR.DB.DeserializePlayer(payload)
     local charactersData = parts[4] or ""
     
     local entry = PTR.DB.EnsurePlayerEntry(accountName)
-    if lastUpdate <= entry.lastUpdate then return nil end
+    
     
     entry.totalPlayed = totalPlayed
     entry.lastUpdate = lastUpdate
     
-    for charString in string.gmatch(charactersData, "[^~]+") do
-        local charParts = {}
-        for p in string.gmatch(charString, "[^^]+") do table.insert(charParts, p) end
-        if #charParts >= 6 then
-            local charKey = charParts[1]
+   for charString in string.gmatch(charactersData, "[^~]+") do
+    local charParts = {}
+    for p in string.gmatch(charString, "[^^]+") do table.insert(charParts, p) end
+    if #charParts >= 6 then
+        local charKey = charParts[1]
+        local newPlayed = tonumber(charParts[6]) or 0
+        
+        -- NE PAS écraser si le perso existe déjà avec plus de temps
+        if not entry.characters[charKey] or (entry.characters[charKey].played or 0) < newPlayed then
             entry.characters[charKey] = {
                 name = charParts[2],
                 realm = charParts[3],
                 classFile = charParts[4],
                 level = tonumber(charParts[5]) or 1,
-                played = tonumber(charParts[6]) or 0,
+                played = newPlayed,
                 owner = accountName,
                 lastSeen = lastUpdate
             }
         end
     end
+end
     PTR.Achievements.CheckAchievements(accountName)
     return accountName
 end
