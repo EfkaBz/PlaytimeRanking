@@ -22,9 +22,9 @@ function PTR.Comm.BroadcastMyData()
     local entry = PlaytimeRankingDB.players[accountName]
     if not entry then return end
     
-    -- Envoyer UN message par personnage (encodé pour les accents)
+    -- Collecter tous les messages à envoyer
+    local messages = {}
     for charKey, charData in pairs(entry.characters) do
-        -- Remplacer les | par ~ pour éviter les conflits
         local safeName = (charData.name or ""):gsub("|", "~")
         local safeRealm = (charData.realm or ""):gsub("|", "~")
         local safeClass = (charData.classFile or "UNKNOWN"):gsub("|", "~")
@@ -38,15 +38,18 @@ function PTR.Comm.BroadcastMyData()
             charData.level or 1,
             charData.played or 0
         )
-        
-        -- TOUJOURS envoyer sur GUILD
-        if IsInGuild() then
-            PTR.Comm.SendMessage(payload, "GUILD")
-        end
-        
-        -- Pour les non-guild : canal WHISPER entre comptes
-        -- Note : PARTY ne fonctionne pas en TBC Anniversary
-        -- Il faut que tous les comptes soient dans la même guilde
+        table.insert(messages, payload)
+    end
+    
+    -- Envoyer avec délai de 0.15s entre chaque message
+    local delay = 0
+    for _, payload in ipairs(messages) do
+        C_Timer.After(delay, function()
+            if IsInGuild() then
+                PTR.Comm.SendMessage(payload, "GUILD")
+            end
+        end)
+        delay = delay + 0.15
     end
     
     PlaytimeRankingDB.config.lastBroadcast = time()
